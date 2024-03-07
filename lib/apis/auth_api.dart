@@ -19,6 +19,8 @@ abstract class IAuthAPI {
     required String email,
     required String password,
   });
+
+  Future<model.User?> currentUserAccount();
 }
 
 class AuthAPI implements IAuthAPI {
@@ -32,19 +34,33 @@ class AuthAPI implements IAuthAPI {
     try {
       final account = await _account.create(
           userId: 'unique()', email: email, password: password);
+        
       return right(account);
+      
     } catch (e, stackTrace) {
       return left(Failure(e.toString(), stackTrace));
     }
   }
   
   @override
-  FutureEither<model.Session> logIn({required String email, required String password}) {
+  FutureEither<model.Session> logIn({required String email, required String password}) async {
     try {
-
+      final account = await _account.createEmailSession(email: email, password: password);
+      return right(account);
     }
     catch(e, stackTrace) {
       return left(Failure(e.toString(), stackTrace));
     }
+  }
+  
+  @override
+  Future<model.User?> currentUserAccount() async {
+    try {
+      return await _account.get();
+    }
+    catch(e){
+      return null;
+    }
+    
   }
 }
